@@ -11,17 +11,48 @@ export default new Vuex.Store({
     cart
   },
   state: {
-    rate: 75
+    rate: {
+      value: 75
+    },
+    loading: true,
+    message: null
+  },
+  mutations: {
+    changeRate: (state, payload) => {
+      state.rate.value = Math.min(80, Math.max(20, payload))
+    },
+    addMessage: (state, payload) => {
+      state.message = payload
+    },
+    removeMessage: state => {
+      state.message = null
+    },
+    statusLoading: (state, payload) => {
+      state.loading = payload
+    }
   },
   getters: {
     viewPrice: state => price => {
-      const rate = state.rate
+      const rate = state.rate.value
       return new Intl.NumberFormat('ru-RU', {
         currency: 'rub',
         style: 'currency'
       }).format(price * rate)
+    },
+    getRate: state => {
+      return state.rate
     }
   },
-  mutations: {},
-  actions: {}
+  actions: {
+    changeRate: ({ commit }, payload) => {
+      commit('changeRate', payload)
+    },
+
+    showMessage: (context, payload) => {
+      context.commit('addMessage', payload)
+      setTimeout(() => {
+        context.commit('removeMessage')
+      }, 3000)
+    }
+  }
 })

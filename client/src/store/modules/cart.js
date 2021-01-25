@@ -7,9 +7,9 @@ const mutations = {
     state.cart = payload
   },
   changeCart: (state, { product, n }) => {
-    const id = product.T
-    const price = product.C
-    const maxCount = product.P
+    const id = product.id
+    const price = product.price
+    const maxCount = product.count
 
     const isProductInCart = state.cart.findIndex(item => {
       return item.id === id
@@ -46,21 +46,20 @@ const mutations = {
 const getters = {
   cartProduct: (state, _, rootState, rootGetters) => id => {
     const products = rootState.products.products
-    const names = rootState.products.names
     const productCart = state.cart.find(item => {
       return item.id === id
     })
     const product = products.find(item => {
-      return item.T === id
+      return item.id === id
     })
 
     const cartProduct = {
       id: productCart.id,
-      title: names[product.G].B[id].N,
-      group: names[product.G].G,
-      price: rootGetters.viewPrice(productCart.price),
-      sum: rootGetters.viewPrice(productCart.sum),
-      totalCount: product.P
+      title: product.title,
+      group: product.titleGroup,
+      price: rootGetters.viewPrice(product.price),
+      sum: rootGetters.viewPrice(product.price * productCart.count),
+      totalCount: product.count
     }
 
     return cartProduct
@@ -76,7 +75,7 @@ const getters = {
 const actions = {
   addToCart: ({ commit, rootState }, payload) => {
     const product = rootState.products.products.find(item => {
-      return item.T === payload
+      return item.id === payload
     })
     commit('changeCart', { product })
   },
@@ -88,7 +87,7 @@ const actions = {
   },
   changeCount: ({ commit, rootState }, payload) => {
     const product = rootState.products.products.find(item => {
-      return item.T === payload.id
+      return item.id === payload.id
     })
     commit('changeCart', { product, n: payload.count })
   },

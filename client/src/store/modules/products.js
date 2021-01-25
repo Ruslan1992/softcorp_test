@@ -1,5 +1,6 @@
-import productsData from '../../mock/data.json'
-import productsName from '../../mock/names.json'
+//import productsData from '../../mock/data.json'
+//import productsName from '../../mock/names.json'
+import { useApi } from '@/api'
 
 const state = () => ({
   products: [],
@@ -8,7 +9,7 @@ const state = () => ({
 
 const mutations = {
   changeProducts: (state, payload) => {
-    state.products = payload.Value.Goods
+    state.products = payload
   },
   changeNames: (state, payload) => {
     state.names = payload
@@ -18,22 +19,23 @@ const mutations = {
 const getters = {
   viewProducts: (state, _, rootState, rootGetters) => {
     const products = state.products
-    const names = state.names
     const viewProducts = {}
 
     products.forEach(item => {
-      const id = item.T
-      const idGroup = item.G
-      const price = item.C
-      const number = item.P
-      const title = names[idGroup].B[id].N
-      const titleGroup = names[idGroup].G
+      const id = item.id
+      const idGroup = item.idGroup
+      const price = item.price
+      const count = item.count
+      const title = item.title
+      const titleGroup = item.titleGroup
+      const changePrice = item.changePrice
 
       item = {
         id,
         price: rootGetters.viewPrice(price),
-        number,
-        title
+        count,
+        title,
+        changePrice
       }
 
       if (!viewProducts[titleGroup]) {
@@ -47,15 +49,25 @@ const getters = {
     })
 
     return viewProducts
+  },
+  getPriceInUSD: state => id => {
+    const product = state.products.find(item => {
+      return item.id === id
+    })
+    return product.price
   }
 }
 
 const actions = {
-  getProducts: ({ commit }) => {
-    const products = JSON.parse(JSON.stringify(productsData))
-    const names = JSON.parse(JSON.stringify(productsName))
+  getProducts: async ({ commit }) => {
+    const products = await useApi('getProducts')
     commit('changeProducts', products)
-    commit('changeNames', names)
+    commit('statusLoading', false)
+  },
+  editProduct: async (context, payload) => {
+    await useApi('editProduct', 'post', payload)
+    context.dispatch('getProducts')
+    context.dispatch('showMessage', 'Продукт успешно изменен')
   }
 }
 
